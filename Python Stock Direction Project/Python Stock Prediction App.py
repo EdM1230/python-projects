@@ -19,9 +19,13 @@ START = '2010-01-01'
 TODAY = datetime.today().strftime("%Y-%m-%d")
 
 #Enter your api keys
-load_dotenv()
-NEWS_API_KEY = os.getenv("NEWS_API_KEY")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+try:
+    NEWS_API_KEY = st.secrets["NEWS_API_KEY"]
+    OPENAI_API_KEY =st.secrets["OPENAI_API_KEY"]
+except:
+    load_dotenv()
+    NEWS_API_KEY = os.getenv("NEWS_API_KEY")
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 class StockDataLoader:
 
