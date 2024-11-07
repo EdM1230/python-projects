@@ -164,7 +164,9 @@ class StockForecasting:
     @staticmethod
     def fbprophet_forecast(ticker_df, periods):
         df_train = ticker_df[['Date', 'Adj Close']]
-        df_train = df_train.rename(columns={"Date": "ds", "Adj Close": "y"})
+        df_train.columns = ['_'.join(col) if isinstance(col, tuple) else col for col in df_train.columns]
+        df_train.columns = ["ds", "y"]
+        df_train['ds'] = df_train['ds'].dt.tz_localize(None)
         model = Prophet()
         model.fit(df_train)
         future = model.make_future_dataframe(periods=periods)
@@ -182,15 +184,34 @@ class StockPrediction:
         self.xgb_model = XGBClassifier(eta=0.2, max_depth=6, n_estimators=1000)
 
     def data_preprocessing(self, ticker_df):
-        self.modified_df = ticker_df
-        self.modified_df["Tomorrow"] = self.modified_df["Adj Close"].shift(-1)
+        self.modified_df = ticker_df.copy()
+        # Create target columns
+        self.modified_df["Tomorrow"] = self.modified_df["Adj Close"].shift(-1)     
+        st.write(self.modified_df)
+        # Create the target column based on the comparison
         self.modified_df["Target"] = (self.modified_df["Tomorrow"] > self.modified_df["Adj Close"]).astype(int)
+        
+        # Create moving averages
         self.modified_df["MA_50"] = self.modified_df["Adj Close"].rolling(50).mean()
         self.modified_df["MA_200"] = self.modified_df["Adj Close"].rolling(200).mean()
+        
+        # Make sure all columns in self.predictors exist in modified_df
+        missing_predictors = [col for col in self.predictors if col not in self.modified_df.columns]
+        if missing_predictors:
+            raise ValueError(f"The following predictor columns are missing: {', '.join(missing_predictors)}")
+        
+        # Select predictors and target
         self.X = self.modified_df[self.predictors]
         self.y = self.modified_df["Target"]
+        
+        # Ensure the indices of X and y match before splitting
+        self.X, self.y = self.X.align(self.y, axis=0)
+        
+        # Split into training and testing sets
         X_train, X_test, y_train, y_test = train_test_split(self.X, self.y, test_size=0.2, random_state=101)
+        
         return X_train, X_test, y_train, y_test
+
     
     def model_prediction(self, X_train, X_test, y_train):
         self.xgb_model.fit(X_train, y_train)
