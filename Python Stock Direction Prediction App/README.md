@@ -5,13 +5,6 @@ This project predicts stock price movement using the **XGBoost** classifier and 
 ## Table of Contents
 1. [Project Overview](#project-overview)
 2. [Features](#features)
-3. [Installation](#installation)
-4. [Usage](#usage)
-5. [Project Structure](#project-structure)
-6. [Technical Details](#technical-details)
-7. [Future Improvements](#future-improvements)
-8. [Contributions](#contributions)
-9. [License](#license)
 
 ## Project Overview
 This project aims to forecast the direction of a stock’s price based on historical price patterns and other relevant features and to display visualizations for each stock ticker. The model used in this project, **XGBoost**, is a powerful and efficient machine learning classifier known for high performance on structured data.
